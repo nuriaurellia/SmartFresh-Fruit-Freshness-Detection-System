@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartFresh - Dashboard Multi-Objek</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-cream font-poppins min-h-screen flex-col">
+    <!-- Header -->
+    <header class="header-detect">
+        <div class="header-left">
+            <a href="/" class="btn-back text-sage">
+                <i data-lucide="arrow-left" width="16" height="16"></i>
+                Kembali
+            </a>
+            <div class="divider"></div>
+            <div class="brand-group">
+                <div class="logo-icon bg-accent" style="width:32px;height:32px;border-radius:8px">
+                    <i data-lucide="layout-dashboard" color="#fff" width="16" height="16"></i>
+                </div>
+                <span class="brand-text text-sage">SmartFresh</span>
+                <span class="badge-mode">Multi-Object Dashboard</span>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div class="time-group">
+                <i data-lucide="clock" color="#A3B18A" width="15" height="15"></i>
+                <span id="current-time" class="text-sage fw-600"></span>
+                <span>·</span>
+                <span id="current-date"></span>
+            </div>
+            <div class="status-online">
+                <div class="dot-online pulse" id="sys-status-dot"></div>
+                <span id="sys-status-text">Sistem Online</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-detect container-wide">
+        <!-- Two-column grid -->
+        <div class="grid-detect">
+            <!-- LEFT — Camera Feed & Stats -->
+            <div class="flex-col gap-1-25">
+                <div class="card card-camera flex-col">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i data-lucide="camera" color="#6A994E" width="18" height="18"></i>
+                        <span class="text-sage font-playfair">Kamera Live</span>
+                    </div>
+                    <div class="camera-controls flex-align gap-sm">
+                        <button id="btn-cam-on" class="btn btn-sm btn-on">ON</button>
+                        <button id="btn-cam-off" class="btn btn-sm btn-off">OFF</button>
+                    </div>
+                </div>
+
+                <div class="camera-area" id="camera-area">
+                    <video id="webcam-video" autoplay playsinline style="display: none;"></video>
+                    
+                    <div id="camera-off-placeholder" class="camera-placeholder">
+                        <i data-lucide="video-off" width="48" height="48" color="#8A9B89"></i>
+                        <span>Kamera Tidak Aktif</span>
+                    </div>
+                    
+                    <div class="grid-overlay" id="grid-overlay" style="display: none;"></div>
+                    
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                    
+                    <div class="scan-line" id="scan-line" style="display:none;"></div>
+                    
+                    <!-- Bounding boxes will be injected here via JS -->
+                    <div id="boxes-container"></div>
+
+                    <div class="frame-info">
+                        <div class="info-pill" id="res-pill" style="display: none;">
+                            <div class="info-label">RESOLUSI</div>
+                            <div class="info-val" id="cam-res-text">1280 × 720</div>
+                        </div>
+                        <div class="info-pill flex-center" id="yolo-pill" style="display: none;">
+                            <i data-lucide="activity" color="#22c55e" width="13" height="13"></i>
+                            <span class="info-val">YOLOv8 Aktif</span>
+                        </div>
+                    </div>
+
+                    <div class="rec-indicator" id="rec-indicator" style="display: none;">
+                        <div class="dot-rec"></div>
+                        <span class="rec-text">REC</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom — Session Statistics (Moved under camera) -->
+            <div class="card">
+                <div class="stats-header mb-1-25">
+                    <div class="flex-align gap-sm">
+                        <i data-lucide="activity" color="#6A994E" width="17" height="17"></i>
+                        <span class="text-sage font-playfair card-title-text">Objek Terdeteksi Saat Ini</span>
+                    </div>
+                    <span class="total-stats">Total Dideteksi: <span id="total-det">0</span></span>
+                </div>
+
+                <div class="stats-grid" style="padding-bottom: 1.25rem;">
+                    <!-- Stat Banana -->
+                    <div class="stat-card" style="background-color: #FEF3C7; padding: 1rem;">
+                        <div class="stat-emoji" style="font-size: 1.5rem;">🍌</div>
+                        <div class="stat-content">
+                            <div class="stat-card-label" style="color: #F59E0B; font-size: 0.65rem;">Pisang</div>
+                            <div class="stat-card-val text-sage" id="stat-banana" style="font-size: 1.5rem;">0</div>
+                        </div>
+                    </div>
+                    <!-- Stat Orange -->
+                    <div class="stat-card" style="background-color: #FFF7ED; padding: 1rem;">
+                        <div class="stat-emoji" style="font-size: 1.5rem;">🍊</div>
+                        <div class="stat-content">
+                            <div class="stat-card-label" style="color: #F97316; font-size: 0.65rem;">Jeruk</div>
+                            <div class="stat-card-val text-sage" id="stat-orange" style="font-size: 1.5rem;">0</div>
+                        </div>
+                    </div>
+                    <!-- Stat Grape -->
+                    <div class="stat-card" style="background-color: #F5F3FF; padding: 1rem;">
+                        <div class="stat-emoji" style="font-size: 1.5rem;">🍇</div>
+                        <div class="stat-content">
+                            <div class="stat-card-label" style="color: #8B5CF6; font-size: 0.65rem;">Anggur</div>
+                            <div class="stat-card-val text-sage" id="stat-grape" style="font-size: 1.5rem;">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT — Detection Results & Info -->
+        <div class="flex-col gap-1-25">
+                <!-- Panel Hasil Deteksi (List) -->
+                <div class="card" style="height: 320px; display: flex; flex-direction: column;">
+                    <div class="card-header">
+                        <div class="flex-align gap-sm">
+                            <i data-lucide="list" color="#6A994E" width="17" height="17"></i>
+                            <span class="text-sage font-playfair card-title-text">Hasil Deteksi</span>
+                        </div>
+                        <span class="badge-count" id="badge-count">0 Objek</span>
+                    </div>
+                    
+                    <div class="card-body p-0" style="flex: 1; overflow-y: auto;">
+                        <div id="detect-list" class="detect-list">
+                            <div class="empty-state">
+                                Tidak ada buah terdeteksi
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel Informasi Buah -->
+                <div class="card flex-1">
+                    <div class="card-header">
+                        <i data-lucide="info" color="#6A994E" width="17" height="17"></i>
+                        <span class="text-sage font-playfair card-title-text">Informasi Buah</span>
+                    </div>
+                    <div class="card-body info-panel-body">
+                        <div id="info-empty">
+                            Arahkan kamera ke buah pisang, jeruk, atau anggur.
+                        </div>
+                        <div id="info-content" style="display: none;">
+                            <div class="info-row">
+                                <span class="info-label">Nama Buah:</span>
+                                <span class="info-value font-playfair" id="info-val-nama">-</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Status:</span>
+                                <span class="info-value" id="info-val-status">-</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Confidence Model:</span>
+                                <span class="info-value" id="info-val-conf">-</span>
+                            </div>
+                            <div class="info-divider"></div>
+                            <div class="info-row-col">
+                                <span class="info-label">Deskripsi:</span>
+                                <p class="info-value-desc" id="info-val-desc">-</p>
+                            </div>
+                            <div class="info-row-col mt-1">
+                                <span class="info-label">Nutrisi:</span>
+                                <div class="info-tags" id="info-val-tags"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer bar -->
+    <div class="footer-bar bg-white mt-1-25">
+        <div class="flex-center gap-sm">
+            <div class="dot-online" style="background-color: #8A9B89;"></div>
+            <span class="footer-bar-text">Sistem Deteksi SmartFresh — YOLOv8 Multi-Object — Proyek Akademik</span>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=4"></script>
+</body>
+</html>

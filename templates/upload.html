@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartFresh - Upload Gambar</title>
+    <meta name="description" content="Unggah gambar buah dan dapatkan hasil deteksi kesegaran buah secara instan menggunakan YOLOv8.">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* ===== UPLOAD PAGE SPECIFIC STYLES ===== */
+        .upload-area {
+            position: relative;
+            background-color: #0D1117;
+            min-height: 480px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            cursor: pointer;
+            transition: border-color 0.3s, background-color 0.2s;
+        }
+
+        .upload-area.drag-over {
+            background-color: rgba(106, 153, 78, 0.1);
+        }
+
+        /* Drop Zone (shows when no image) */
+        .drop-zone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 2rem;
+            text-align: center;
+            position: absolute;
+            inset: 0;
+            transition: opacity 0.3s;
+        }
+
+        .drop-zone-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(106, 153, 78, 0.15);
+            border: 2px dashed rgba(106, 153, 78, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .upload-area.drag-over .drop-zone-icon {
+            background: rgba(106, 153, 78, 0.3);
+            border-color: var(--accent);
+            transform: scale(1.1);
+        }
+
+        .drop-zone-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #8A9B89;
+        }
+
+        .drop-zone-sub {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .drop-zone-formats {
+            display: flex;
+            gap: 8px;
+            margin-top: 0.5rem;
+        }
+
+        .format-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--accent);
+            background: rgba(106, 153, 78, 0.15);
+            border-radius: 50px;
+            padding: 3px 10px;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-browse {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 0.6rem 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-browse:hover {
+            background: #5a8540;
+            transform: translateY(-1px);
+        }
+
+        /* Preview image canvas wrapper */
+        #preview-wrapper {
+            display: none;
+            position: absolute;
+            inset: 0;
+        }
+
+        #preview-canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* Bounding boxes container for upload */
+        #upload-boxes-container {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        /* Upload loading overlay */
+        .upload-loading {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(13, 17, 23, 0.85);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            z-index: 10;
+        }
+
+        .upload-loading.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(106, 153, 78, 0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #A3B18A;
+        }
+
+        /* Clear / Reset button */
+        .btn-clear {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-clear:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+
+        /* Detect again button */
+        .btn-redetect {
+            background: rgba(106, 153, 78, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(106, 153, 78, 0.3);
+            border-radius: 8px;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-redetect:hover {
+            background: rgba(106, 153, 78, 0.2);
+        }
+
+        /* Status bar inside image area */
+        .upload-status-bar {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            right: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .status-pill {
+            background-color: rgba(0,0,0,0.7);
+            border-radius: 8px;
+            padding: 6px 12px;
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .status-pill.hidden {
+            display: none;
+        }
+
+        /* Upload detection list item extra style */
+        .detect-item-upload {
+            padding: 0.9rem 1.5rem;
+        }
+
+        /* Info panel no-detection state */
+        .no-detection-info {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .no-detection-info .nd-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .no-detection-info .nd-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--sage-green);
+            margin-bottom: 0.4rem;
+        }
+
+        .no-detection-info .nd-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body class="bg-cream font-poppins min-h-screen flex-col">
+    <!-- Header (same as detection.html) -->
+    <header class="header-detect">
+        <div class="header-left">
+            <a href="/" class="btn-back text-sage">
+                <i data-lucide="arrow-left" width="16" height="16"></i>
+                Kembali
+            </a>
+            <div class="divider"></div>
+            <div class="brand-group">
+                <div class="logo-icon bg-accent" style="width:32px;height:32px;border-radius:8px">
+                    <i data-lucide="upload" color="#fff" width="16" height="16"></i>
+                </div>
+                <span class="brand-text text-sage">SmartFresh</span>
+                <span class="badge-mode">Upload Gambar</span>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div class="time-group">
+                <i data-lucide="clock" color="#A3B18A" width="15" height="15"></i>
+                <span id="current-time" class="text-sage fw-600"></span>
+                <span>·</span>
+                <span id="current-date"></span>
+            </div>
+            <div class="status-online">
+                <div class="dot-online" id="sys-status-dot"></div>
+                <span id="sys-status-text">Model Siap</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-detect container-wide">
+        <div class="grid-detect">
+            <!-- LEFT — Upload Area & Stats -->
+            <div class="flex-col gap-1-25">
+
+                <!-- Upload Card -->
+                <div class="card card-camera flex-col">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i data-lucide="image" color="#6A994E" width="18" height="18"></i>
+                            <span class="text-sage font-playfair">Unggah Gambar</span>
+                        </div>
+                        <div class="flex-align gap-sm">
+                            <button id="btn-redetect" class="btn-redetect" style="display:none;">
+                                <i data-lucide="refresh-cw" width="13" height="13"></i>
+                                Deteksi Ulang
+                            </button>
+                            <button id="btn-clear" class="btn-clear" style="display:none;">
+                                <i data-lucide="x" width="13" height="13"></i>
+                                Hapus
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Upload / Preview Area -->
+                    <div class="upload-area" id="upload-area">
+                        <!-- Corner Brackets (same as camera page) -->
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+
+                        <!-- Drop Zone UI -->
+                        <div class="drop-zone" id="drop-zone">
+                            <div class="drop-zone-icon">
+                                <i data-lucide="upload-cloud" color="#6A994E" width="36" height="36"></i>
+                            </div>
+                            <div>
+                                <div class="drop-zone-title">Seret & Lepas Gambar di Sini</div>
+                                <div class="drop-zone-sub">atau klik tombol untuk memilih file</div>
+                            </div>
+                            <div class="drop-zone-formats">
+                                <span class="format-badge">JPG</span>
+                                <span class="format-badge">JPEG</span>
+                                <span class="format-badge">PNG</span>
+                            </div>
+                            <button class="btn-browse" id="btn-browse" onclick="event.stopPropagation();">
+                                <i data-lucide="folder-open" width="16" height="16"></i>
+                                Pilih Gambar
+                            </button>
+                        </div>
+
+                        <!-- Preview Canvas -->
+                        <div id="preview-wrapper">
+                            <canvas id="preview-canvas"></canvas>
+                            <div id="upload-boxes-container"></div>
+                        </div>
+
+                        <!-- Loading Overlay -->
+                        <div class="upload-loading" id="upload-loading">
+                            <div class="spinner"></div>
+                            <div class="loading-text">Mendeteksi dengan YOLOv8...</div>
+                        </div>
+
+                        <!-- Status bar (shown after detection) -->
+                        <div class="upload-status-bar" id="upload-status-bar">
+                            <div class="status-pill hidden" id="file-name-pill">
+                                <i data-lucide="image" width="12" height="12"></i>
+                                <span id="file-name-text">-</span>
+                            </div>
+                            <div class="status-pill hidden" id="yolo-active-pill">
+                                <i data-lucide="activity" color="#22c55e" width="13" height="13"></i>
+                                <span>YOLOv8 Aktif</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Card -->
+                <div class="card">
+                    <div class="stats-header mb-1-25">
+                        <div class="flex-align gap-sm">
+                            <i data-lucide="activity" color="#6A994E" width="17" height="17"></i>
+                            <span class="text-sage font-playfair card-title-text">Objek Terdeteksi</span>
+                        </div>
+                        <span class="total-stats">Total: <span id="total-det">0</span></span>
+                    </div>
+                    <div class="stats-grid" style="padding-bottom: 1.25rem;">
+                        <div class="stat-card" style="background-color: #FEF3C7; padding: 1rem;">
+                            <div class="stat-emoji" style="font-size: 1.5rem;">🍌</div>
+                            <div class="stat-content">
+                                <div class="stat-card-label" style="color: #F59E0B; font-size: 0.65rem;">Pisang</div>
+                                <div class="stat-card-val text-sage" id="stat-banana" style="font-size: 1.5rem;">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="background-color: #FFF7ED; padding: 1rem;">
+                            <div class="stat-emoji" style="font-size: 1.5rem;">🍊</div>
+                            <div class="stat-content">
+                                <div class="stat-card-label" style="color: #F97316; font-size: 0.65rem;">Jeruk</div>
+                                <div class="stat-card-val text-sage" id="stat-orange" style="font-size: 1.5rem;">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="background-color: #F5F3FF; padding: 1rem;">
+                            <div class="stat-emoji" style="font-size: 1.5rem;">🍇</div>
+                            <div class="stat-content">
+                                <div class="stat-card-label" style="color: #8B5CF6; font-size: 0.65rem;">Anggur</div>
+                                <div class="stat-card-val text-sage" id="stat-grape" style="font-size: 1.5rem;">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT — Detection Results & Info -->
+            <div class="flex-col gap-1-25">
+                <!-- Panel Hasil Deteksi -->
+                <div class="card" style="height: 320px; display: flex; flex-direction: column;">
+                    <div class="card-header">
+                        <div class="flex-align gap-sm">
+                            <i data-lucide="list" color="#6A994E" width="17" height="17"></i>
+                            <span class="text-sage font-playfair card-title-text">Hasil Deteksi</span>
+                        </div>
+                        <span class="badge-count" id="badge-count">0 Objek</span>
+                    </div>
+                    <div class="card-body p-0" style="flex: 1; overflow-y: auto;">
+                        <div id="detect-list" class="detect-list">
+                            <div class="empty-state">
+                                Unggah gambar untuk memulai deteksi
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel Informasi Buah -->
+                <div class="card flex-1">
+                    <div class="card-header">
+                        <i data-lucide="info" color="#6A994E" width="17" height="17"></i>
+                        <span class="text-sage font-playfair card-title-text">Informasi Buah</span>
+                    </div>
+                    <div class="card-body info-panel-body">
+                        <div id="info-empty">
+                            Silakan unggah gambar buah untuk memulai deteksi.
+                        </div>
+                        <!-- No detection state -->
+                        <div id="info-no-detect" style="display: none;">
+                            <div class="no-detection-info">
+                                <div class="nd-icon">🔍</div>
+                                <div class="nd-title">Tidak Terdeteksi</div>
+                                <div class="nd-desc">Silakan unggah gambar yang berisi buah pisang, jeruk, atau anggur.</div>
+                            </div>
+                            <div style="padding: 0 1rem 1rem;">
+                                <div class="info-row">
+                                    <span class="info-label">Nama Buah:</span>
+                                    <span class="info-value">Tidak Terdeteksi</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Status:</span>
+                                    <span class="info-value text-danger">-</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Confidence:</span>
+                                    <span class="info-value">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Detection content -->
+                        <div id="info-content" style="display: none;">
+                            <div class="info-row">
+                                <span class="info-label">Nama Buah:</span>
+                                <span class="info-value font-playfair" id="info-val-nama">-</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Status:</span>
+                                <span class="info-value" id="info-val-status">-</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Confidence:</span>
+                                <span class="info-value" id="info-val-conf">-</span>
+                            </div>
+                            <div class="info-divider"></div>
+                            <div class="info-row-col">
+                                <span class="info-label">Deskripsi:</span>
+                                <p class="info-value-desc" id="info-val-desc">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer bar -->
+    <div class="footer-bar bg-white mt-1-25">
+        <div class="flex-center gap-sm">
+            <div class="dot-online" style="background-color: #8A9B89;"></div>
+            <span class="footer-bar-text">Sistem Deteksi SmartFresh — YOLOv8 Upload Mode — Proyek Akademik</span>
+        </div>
+    </div>
+
+    <!-- Hidden file input -->
+    <input type="file" id="file-input" accept=".jpg,.jpeg,.png" style="display:none;">
+
+    <script>
+        lucide.createIcons();
+    </script>
+    <script src="{{ url_for('static', filename='js/upload.js') }}?v=1"></script>
+</body>
+</html>

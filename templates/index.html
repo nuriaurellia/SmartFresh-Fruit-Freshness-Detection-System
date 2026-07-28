@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartFresh - Sistem Deteksi Kesegaran Buah</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-cream font-poppins min-h-screen">
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-pill">
+            <a href="/" class="logo-group" style="text-decoration: none;">
+                <div class="logo-icon bg-accent">
+                    <i data-lucide="leaf" color="#fff" width="20" height="20"></i>
+                </div>
+                <span class="logo-text text-sage">SmartFresh</span>
+            </a>
+            <div class="nav-links">
+                <a href="#features" class="nav-link" data-section="features">Fitur</a>
+                <a href="#how-it-works" class="nav-link" data-section="how-it-works">Cara Kerja</a>
+                <a href="#fruits" class="nav-link" data-section="fruits">Buah</a>
+                <a href="/upload" class="nav-link" id="nav-upload">Unggah</a>
+                <a href="/detection" class="nav-link nav-link-camera">Buka Kamera</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section container">
+        <div class="hero-grid">
+            <!-- Left Content -->
+            <div class="hero-content">
+                <div class="badge-ai">
+                    <div class="dot-accent"></div>
+                    <span class="badge-text">Deteksi Berbasis AI</span>
+                </div>
+                <h1 class="hero-title text-sage">SmartFresh</h1>
+                <p class="hero-subtitle text-lightgreen">Sistem Deteksi Kesegaran Buah Real-Time</p>
+                <p class="hero-desc">
+                    SmartFresh adalah sistem computer vision berbasis AI yang mendeteksi kesegaran buah dan kelayakan konsumsi secara real time menggunakan teknologi YOLOv8.
+                </p>
+                <div class="hero-actions" style="flex-direction: column; align-items: flex-start; gap: 1rem;">
+                    <p style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.25rem;">Pilih Metode Deteksi</p>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <a href="/detection" class="btn btn-primary btn-large has-shadow" id="btn-camera-detect">
+                            <i data-lucide="camera" width="20" height="20"></i>
+                            Buka Kamera
+                        </a>
+                        <a href="/upload" class="btn btn-large has-shadow" id="btn-upload-detect" style="background-color: #fff; color: var(--sage-green); border: 1.5px solid var(--beige);">
+                            <i data-lucide="upload" width="20" height="20"></i>
+                            Unggah Gambar
+                        </a>
+                    </div>
+                    <div class="free-badge text-sage">
+                        <i data-lucide="check-circle" color="#6A994E" width="16" height="16"></i>
+                        <span>Gratis digunakan</span>
+                    </div>
+                </div>
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <div class="stat-value text-sage">99%</div>
+                        <div class="stat-label">Tingkat Akurasi</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value text-sage">&lt; 1s</div>
+                        <div class="stat-label">Kecepatan Deteksi</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value text-sage">3</div>
+                        <div class="stat-label">Jenis Buah</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Content - Hero Image -->
+            <div class="hero-image-wrapper">
+                <div class="hero-image-container">
+                    <img src="https://images.unsplash.com/photo-1743956345250-4a43d73a7628?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwyfHxmcmVzaCUyMGZydWl0cyUyMGJhbmFuYSUyMG9yYW5nZSUyMGdyYXBlJTIwaGVhbHRoeSUyMGZvb2R8ZW58MXx8fHwxNzgyMTEzNDU4fDA&ixlib=rb-4.1.0&q=80&w=1080" alt="Fresh colorful fruits" class="hero-img">
+                    <div class="img-overlay"></div>
+                </div>
+
+                <div class="floating-badge badge-yolo">
+                    <div class="badge-icon-bg">
+                        <i data-lucide="zap" color="#6A994E" width="18" height="18"></i>
+                    </div>
+                    <div class="badge-text-group">
+                        <div class="badge-title text-sage">YOLOv8</div>
+                        <div class="badge-sub">Didukung oleh</div>
+                    </div>
+                </div>
+
+                <div class="floating-badge badge-live">
+                    <div class="dot-live"></div>
+                    <span class="live-text text-sage">Deteksi Live Aktif</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section bg-white">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">MENGAPA SMARTFRESH</span>
+                <h2 class="section-title text-sage">Fitur Cerdas</h2>
+                <p class="section-desc">Menggabungkan computer vision dengan deep learning untuk penilaian kualitas buah yang akurat dan real-time.</p>
+            </div>
+
+            <div class="features-grid">
+                <!-- Feature 1 -->
+                <div class="feature-card">
+                    <div class="feature-card-header">
+                        <div class="feature-icon">
+                            <i data-lucide="camera" color="#6A994E" width="28" height="28"></i>
+                        </div>
+                        <span class="feature-tag">LIVE</span>
+                    </div>
+                    <h3 class="feature-title text-sage">Deteksi Real-Time</h3>
+                    <p class="feature-desc">Mendeteksi buah secara instan melalui input kamera dengan pemrosesan sub-detik yang didukung oleh arsitektur neural network YOLOv8 yang canggih.</p>
+                </div>
+                <!-- Feature 2 -->
+                <div class="feature-card">
+                    <div class="feature-card-header">
+                        <div class="feature-icon">
+                            <i data-lucide="check-circle" color="#6A994E" width="28" height="28"></i>
+                        </div>
+                        <span class="feature-tag">AKURAT</span>
+                    </div>
+                    <h3 class="feature-title text-sage">Penilaian Kesegaran</h3>
+                    <p class="feature-desc">Mengklasifikasikan buah sebagai layak atau tidak layak konsumsi dengan skor kepercayaan yang berasal dari analisis computer vision tingkat lanjut.</p>
+                </div>
+                <!-- Feature 3 -->
+                <div class="feature-card">
+                    <div class="feature-card-header">
+                        <div class="feature-icon">
+                            <i data-lucide="book-open" color="#6A994E" width="28" height="28"></i>
+                        </div>
+                        <span class="feature-tag">INFORMATIF</span>
+                    </div>
+                    <h3 class="feature-title text-sage">Informasi Edukatif</h3>
+                    <p class="feature-desc">Menampilkan informasi nutrisi komprehensif dan manfaat kesehatan dari buah yang terdeteksi untuk mendukung keputusan makan sehat.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="process-section bg-cream">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">PROSES</span>
+                <h2 class="section-title text-sage">Cara Kerja</h2>
+                <p class="section-desc">Empat langkah mudah dari input kamera hingga hasil kesegaran.</p>
+            </div>
+
+            <div class="process-grid">
+                <div class="process-line"></div>
+                <!-- Step 1 -->
+                <div class="process-step">
+                    <div class="step-icon">📷</div>
+                    <div class="step-num">LANGKAH 01</div>
+                    <h3 class="step-title text-sage">Input Kamera</h3>
+                    <p class="step-desc">Arahkan kamera Anda ke buah apa saja untuk memulai proses deteksi secara real time.</p>
+                    <i data-lucide="chevron-right" class="step-arrow" color="#A3B18A"></i>
+                </div>
+                <!-- Step 2 -->
+                <div class="process-step">
+                    <div class="step-icon">🧠</div>
+                    <div class="step-num">LANGKAH 02</div>
+                    <h3 class="step-title text-sage">Deteksi YOLOv8</h3>
+                    <p class="step-desc">Model YOLOv8 memproses setiap frame, menemukan dan mengidentifikasi buah dengan bounding box.</p>
+                    <i data-lucide="chevron-right" class="step-arrow" color="#A3B18A"></i>
+                </div>
+                <!-- Step 3 -->
+                <div class="process-step">
+                    <div class="step-icon">🔍</div>
+                    <div class="step-num">LANGKAH 03</div>
+                    <h3 class="step-title text-sage">Analisis Kesegaran</h3>
+                    <p class="step-desc">Setiap buah yang terdeteksi dianalisis tingkat kesegarannya dan diklasifikasikan sesuai.</p>
+                    <i data-lucide="chevron-right" class="step-arrow" color="#A3B18A"></i>
+                </div>
+                <!-- Step 4 -->
+                <div class="process-step active">
+                    <div class="step-icon">📊</div>
+                    <div class="step-num">LANGKAH 04</div>
+                    <h3 class="step-title text-sage">Tampilan Hasil</h3>
+                    <p class="step-desc">Lihat hasil klasifikasi, skor kepercayaan, dan informasi nutrisi secara instan.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fruits Section -->
+    <section id="fruits" class="fruits-section bg-white">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">BUAH YANG DIDUKUNG</span>
+                <h2 class="section-title text-sage">Apa yang Kami Deteksi</h2>
+                <p class="section-desc">SmartFresh saat ini mendukung deteksi dan analisis kesegaran untuk tiga jenis buah.</p>
+            </div>
+
+            <div class="fruits-grid">
+                <!-- Fruit 1 -->
+                <div class="fruit-card">
+                    <div class="fruit-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwyfHxmcmVzaCUyMGJhbmFuYSUyMGJ1bmNoJTIweWVsbG93fGVufDF8fHx8MTc4MjExMzQ2Mnww&ixlib=rb-4.1.0&q=80&w=600" alt="Pisang" class="fruit-img">
+                        <div class="fruit-overlay"></div>
+                        <div class="fruit-emoji">🍌</div>
+                    </div>
+                    <div class="fruit-info">
+                        <h3 class="fruit-name text-sage">Pisang</h3>
+                        <p class="fruit-desc">Deteksi kesegaran pisang dari hijau hingga terlalu matang dengan akurasi tinggi.</p>
+                        <div class="fruit-tags">
+                            <span class="fruit-tag">Kaya Kalium</span>
+                            <span class="fruit-tag">Sumber Energi</span>
+                            <span class="fruit-tag">Vitamin B6</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Fruit 2 -->
+                <div class="fruit-card">
+                    <div class="fruit-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1557800636-894a64c1696f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMG9yYW5nZSUyMGNpdHJ1cyUyMGZydWl0fGVufDF8fHx8MTc4MjExMzQ2M3ww&ixlib=rb-4.1.0&q=80&w=600" alt="Jeruk" class="fruit-img">
+                        <div class="fruit-overlay"></div>
+                        <div class="fruit-emoji">🍊</div>
+                    </div>
+                    <div class="fruit-info">
+                        <h3 class="fruit-name text-sage">Jeruk</h3>
+                        <p class="fruit-desc">Nilai kualitas jeruk dan tentukan waktu konsumsi yang optimal.</p>
+                        <div class="fruit-tags">
+                            <span class="fruit-tag">Vitamin C</span>
+                            <span class="fruit-tag">Antioksidan</span>
+                            <span class="fruit-tag">Imun Dukungan</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Fruit 3 -->
+                <div class="fruit-card">
+                    <div class="fruit-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1698305819486-ecca56daaba3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwyfHxmcmVzaCUyMHB1cnBsZSUyMGdyYXBlJTIwY2x1c3RlcnxlbnwxfHx8fDE3ODIxMTM0NjR8MA&ixlib=rb-4.1.0&q=80&w=600" alt="Anggur" class="fruit-img">
+                        <div class="fruit-overlay"></div>
+                        <div class="fruit-emoji">🍇</div>
+                    </div>
+                    <div class="fruit-info">
+                        <h3 class="fruit-name text-sage">Anggur</h3>
+                        <p class="fruit-desc">Identifikasi tandan anggur dan evaluasi kesegaran untuk kualitas terbaik.</p>
+                        <div class="fruit-tags">
+                            <span class="fruit-tag">Resveratrol</span>
+                            <span class="fruit-tag">Kesehatan Jantung</span>
+                            <span class="fruit-tag">Vitamin K</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section bg-cream">
+        <div class="cta-box bg-sage text-center">
+            <h2 class="cta-title">Siap Mendeteksi Kesegaran?</h2>
+            <p class="cta-desc text-lightgreen">Pilih metode deteksi yang sesuai: gunakan kamera secara real time atau unggah gambar untuk dianalisis oleh YOLOv8.</p>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="/detection" class="btn btn-white btn-large has-shadow cta-btn">
+                    <i data-lucide="camera" width="20" height="20"></i>
+                    Buka Kamera
+                    <i data-lucide="arrow-right" width="18" height="18"></i>
+                </a>
+                <a href="/upload" class="btn btn-large has-shadow cta-btn" style="background-color: rgba(255,255,255,0.15); color: #fff; border: 1.5px solid rgba(255,255,255,0.3);">
+                    <i data-lucide="upload" width="20" height="20"></i>
+                    Upload Gambar
+                    <i data-lucide="arrow-right" width="18" height="18"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer bg-white">
+        <div class="container footer-content">
+            <div class="footer-logo">
+                <div class="logo-icon bg-accent" style="width:32px;height:32px;border-radius:8px">
+                    <i data-lucide="leaf" color="#fff" width="16" height="16"></i>
+                </div>
+                <div class="footer-text">
+                    <div class="footer-title text-sage">SmartFresh</div>
+                    <div class="footer-subtitle">Proyek akademik untuk deteksi kesegaran buah.</div>
+                </div>
+            </div>
+            <div class="footer-copyright">
+                © 2026 SmartFresh. Dibangun dengan YOLOv8 & OpenCV.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // ===== ACTIVE NAVIGATION via Intersection Observer =====
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.nav-link[data-section]');
+
+        const observerOptions = {
+            root: null,
+            rootMargin: '-20% 0px -60% 0px',
+            threshold: 0
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const activeId = entry.target.id;
+                    navLinks.forEach(link => {
+                        if (link.dataset.section === activeId) {
+                            link.classList.add('active');
+                        } else {
+                            link.classList.remove('active');
+                        }
+                    });
+                    // Remove active from upload link when on-page sections are active
+                    document.getElementById('nav-upload')?.classList.remove('active');
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(section => observer.observe(section));
+    </script>
+</body>
+</html>
